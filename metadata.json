@@ -1,0 +1,7 @@
+{
+  "name": "Amber Scrapbook AI",
+  "description": "An AI-powered mood board for design inspiration, organized by weeks with a cozy, handwritten aesthetic.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
