@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { StickyNote } from 'lucide-react';
 
 interface ResizableNotesProps {
@@ -8,7 +8,7 @@ interface ResizableNotesProps {
 }
 
 const ResizableNotes: React.FC<ResizableNotesProps> = ({ value, onChange }) => {
-  const [height, setHeight] = useState(200);
+  const [height, setHeight] = useState(240);
   const containerRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
 
@@ -35,26 +35,26 @@ const ResizableNotes: React.FC<ResizableNotesProps> = ({ value, onChange }) => {
     <div 
       ref={containerRef}
       style={{ height: `${height}px` }}
-      className="relative w-full bg-amber-50 dark:bg-stone-900 border-2 border-amber-200 dark:border-stone-800 rounded-3xl p-6 flex flex-col shadow-inner group"
+      className="relative w-full bg-[#FFFDF0] dark:bg-stone-900 border border-amber-200/50 dark:border-stone-800 rounded-[2.5rem] p-8 flex flex-col shadow-inner group transition-colors overflow-hidden"
     >
-      <div className="flex items-center gap-2 mb-2 opacity-50">
-        <StickyNote size={18} />
-        <span className="text-sm font-bold uppercase tracking-widest handwritten">Weekly Notes</span>
+      <div className="flex items-center gap-3 mb-4 opacity-40">
+        <StickyNote size={20} className="text-amber-600" />
+        <span className="text-sm font-bold uppercase tracking-[0.2em]">Weekly Reflections</span>
       </div>
       
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Thoughts, reflections, or the vibe of this week..."
-        className="flex-1 bg-transparent border-none outline-none resize-none handwritten text-xl text-amber-900 dark:text-amber-100 placeholder:opacity-30"
+        placeholder="Capture the vibe of your design week..."
+        className="flex-1 bg-transparent border-none outline-none resize-none handwritten text-2xl text-amber-900 dark:text-amber-100 placeholder:opacity-30 leading-relaxed"
       />
 
       {/* Resize handle */}
       <div 
         onMouseDown={handleMouseDown}
-        className="absolute bottom-0 left-0 right-0 h-6 cursor-ns-resize flex items-center justify-center group-hover:bg-amber-100/30 dark:group-hover:bg-stone-800/30 transition-colors rounded-b-3xl"
+        className="absolute bottom-0 left-0 right-0 h-8 cursor-ns-resize flex items-center justify-center group-hover:bg-amber-100/10 dark:group-hover:bg-amber-900/10 transition-colors"
       >
-        <div className="w-12 h-1 bg-amber-300 dark:bg-stone-700 rounded-full opacity-50" />
+        <div className="w-16 h-1 bg-amber-200 dark:bg-stone-700 rounded-full opacity-40" />
       </div>
     </div>
   );
