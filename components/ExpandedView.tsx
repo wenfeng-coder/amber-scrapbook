@@ -48,26 +48,26 @@ const ExpandedView: React.FC<ExpandedViewProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex flex-col bg-[#FAF9F6]/95 dark:bg-stone-950/95 backdrop-blur-xl paper-texture overflow-y-auto"
+      className="fixed inset-0 z-50 flex flex-col bg-[#F9F8F6]/98 dark:bg-[#121212]/98 backdrop-blur-2xl paper-texture overflow-y-auto"
     >
-      {/* Navigation Bar */}
-      <div className="sticky top-0 z-50 w-full px-6 md:px-12 py-6 flex items-center justify-between">
+      {/* App Bar */}
+      <div className="sticky top-0 z-50 w-full px-8 py-8 flex items-center justify-between">
         <button 
           onClick={onClose}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm hover:bg-stone-50 transition-colors"
+          className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm hover:border-amber-500 transition-all"
         >
-          <ArrowLeft size={18} />
-          <span className="font-bold text-sm">Back</span>
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="font-bold text-sm">Return</span>
         </button>
 
         <div className="absolute left-1/2 -translate-x-1/2 text-center">
             <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-500">{dayLabel}</h2>
-            <p className="text-xs uppercase tracking-[0.2em] font-bold opacity-40">{format(currentDay.date, 'MMMM do, yyyy')}</p>
+            <p className="text-xs uppercase tracking-widest font-black opacity-30">{format(currentDay.date, 'MMMM do, yyyy')}</p>
         </div>
 
-        <label className="cursor-pointer flex items-center gap-2 px-6 py-2 rounded-full bg-amber-600 text-white shadow-lg hover:bg-amber-700 transition-all hover:scale-105">
-          <Plus size={18} />
-          <span className="font-bold text-sm">Add Inspiration</span>
+        <label className="cursor-pointer flex items-center gap-2 px-7 py-2.5 rounded-full bg-amber-600 text-white shadow-xl hover:bg-amber-700 hover:scale-105 active:scale-95 transition-all">
+          <Plus size={20} />
+          <span className="font-bold text-sm">New Inspiration</span>
           <input 
             type="file" 
             accept="image/*" 
@@ -77,10 +77,10 @@ const ExpandedView: React.FC<ExpandedViewProps> = ({
         </label>
       </div>
 
-      {/* Masonry Content */}
-      <div className="flex-1 w-full max-w-7xl mx-auto px-6 md:px-12 py-12">
+      {/*无裁剪瀑布流内容 */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-12 pb-24">
         {dayEntries.length > 0 ? (
-          <div className="masonry-grid">
+          <div className="masonry-grid mt-12">
             {dayEntries.map(entry => (
               <div key={entry.id} className="masonry-item">
                 <PolaroidCard 
@@ -93,8 +93,10 @@ const ExpandedView: React.FC<ExpandedViewProps> = ({
           </div>
         ) : (
           <div className="h-[60vh] flex flex-col items-center justify-center text-stone-300 dark:text-stone-700">
-            <ImageIcon size={64} strokeWidth={1} />
-            <p className="mt-4 text-2xl handwritten">Start your mood board...</p>
+            <div className="w-24 h-24 bg-stone-100 dark:bg-stone-900 rounded-full flex items-center justify-center">
+                <ImageIcon size={48} strokeWidth={1} />
+            </div>
+            <p className="mt-8 text-3xl handwritten opacity-60">Your canvas is waiting...</p>
           </div>
         )}
       </div>

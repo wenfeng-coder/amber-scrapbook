@@ -1,49 +1,48 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { format, addWeeks, startOfISOWeek } from 'date-fns';
-import { ChevronLeft, ChevronRight, Moon, Sun, Pin, ArrowLeft } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Moon, Sun, Pin } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import ScrapbookGrid from './components/ScrapbookGrid';
 import ExpandedView from './components/ExpandedView';
-import { ScrapbookEntry, WeeklyData } from './types';
+import { WeeklyData, ScrapbookEntry } from './types';
 import { analyzeImageDesign } from './geminiService';
 
 const App: React.FC = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfISOWeek(new Date()));
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('designmuse_dark');
+      return saved === 'true' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
   const [selectedDayLabel, setSelectedDayLabel] = useState<string | null>(null);
 
-  // Theme management
+  // Sync Dark Mode with DOM
   useEffect(() => {
-    const savedTheme = localStorage.getItem('designmuse_theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialDark = savedTheme ? savedTheme === 'dark' : prefersDark;
-    
-    setIsDarkMode(initialDark);
-    if (initialDark) document.documentElement.classList.add('dark');
-  }, []);
-
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    localStorage.setItem('designmuse_theme', newMode ? 'dark' : 'light');
-    if (newMode) {
-      document.documentElement.classList.add('dark');
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
-  };
+    localStorage.setItem('designmuse_dark', String(isDarkMode));
+  }, [isDarkMode]);
 
-  // Data persistence
+  // Load Initial Data
   useEffect(() => {
-    const saved = localStorage.getItem('designmuse_data_v2');
+    const saved = localStorage.getItem('designmuse_store_v3');
     if (saved) setWeeklyData(JSON.parse(saved));
   }, []);
 
+  // Persist Data
   useEffect(() => {
-    localStorage.setItem('designmuse_data_v2', JSON.stringify(weeklyData));
+    localStorage.setItem('designmuse_store_v3', JSON.stringify(weeklyData));
   }, [weeklyData]);
+
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
   const navigateWeek = (direction: 'next' | 'prev') => {
     setCurrentWeekStart(prev => addWeeks(prev, direction === 'next' ? 1 : -1));
@@ -89,8 +88,8 @@ const App: React.FC = () => {
       try {
         const tags = await analyzeImageDesign(base64);
         setWeeklyData(prev => {
-          const startStr = currentWeekStart.toISOString();
-          const weekIndex = prev.findIndex(w => w.weekStart === startStr);
+          const weekStartStr = currentWeekStart.toISOString();
+          const weekIndex = prev.findIndex(w => w.weekStart === weekStartStr);
           if (weekIndex > -1) {
             const updatedWeek = { ...prev[weekIndex] };
             const entryIndex = updatedWeek.entries.findIndex(entry => entry.id === newEntry.id);
@@ -102,43 +101,41 @@ const App: React.FC = () => {
           return prev;
         });
       } catch (err) {
-        console.error("Gemini failed", err);
+        console.error("AI Analysis failed", err);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const weekRange = `${format(currentWeekStart, 'MMM d')} — ${format(addWeeks(currentWeekStart, 1), 'MMM d, yyyy')}`;
+  const weekLabel = `${format(currentWeekStart, 'MMMM d')} - ${format(addWeeks(currentWeekStart, 1), 'd, yyyy')}`;
 
   return (
-    <div className="min-h-screen px-4 md:px-12 py-8 flex flex-col items-center">
-      {/* Header */}
-      <header className="w-full max-w-6xl flex items-center justify-between mb-16">
-        <h1 className="text-3xl md:text-4xl font-bold text-amber-900 dark:text-amber-500 tracking-tight">
+    <div className="min-h-screen py-8 px-6 md:px-16 max-w-7xl mx-auto flex flex-col">
+      <header className="flex justify-between items-center mb-16">
+        <h1 className="text-3xl md:text-4xl font-bold text-amber-900 dark:text-amber-500 tracking-tight select-none">
           DesignMuse
         </h1>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 bg-white/50 dark:bg-stone-900/50 backdrop-blur-md px-4 py-2 rounded-full border border-amber-100 dark:border-stone-800 shadow-sm">
-            <button onClick={() => navigateWeek('prev')} className="p-1 hover:bg-amber-100 dark:hover:bg-stone-800 rounded-full transition-colors">
-              <ChevronLeft size={18} />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center bg-white/80 dark:bg-stone-900/80 backdrop-blur-md px-5 py-2 rounded-full border border-stone-200 dark:border-stone-800 shadow-sm">
+            <button onClick={() => navigateWeek('prev')} className="p-1 hover:text-amber-600 transition-colors">
+              <ChevronLeft size={20} />
             </button>
-            <span className="font-semibold text-xs md:text-sm">{weekRange}</span>
-            <button onClick={() => navigateWeek('next')} className="p-1 hover:bg-amber-100 dark:hover:bg-stone-800 rounded-full transition-colors">
-              <ChevronRight size={18} />
+            <span className="mx-4 text-sm font-bold opacity-80">{weekLabel}</span>
+            <button onClick={() => navigateWeek('next')} className="p-1 hover:text-amber-600 transition-colors">
+              <ChevronRight size={20} />
             </button>
           </div>
 
           <button 
             onClick={toggleDarkMode}
-            className="p-3 rounded-full bg-amber-100 dark:bg-stone-800 text-amber-900 dark:text-amber-400 hover:rotate-12 transition-all shadow-md"
+            className="p-3 bg-amber-100 dark:bg-stone-800 rounded-full text-amber-900 dark:text-amber-400 shadow-md hover:scale-110 transition-transform"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
       </header>
 
-      {/* Grid View */}
       <ScrapbookGrid 
         weekStart={currentWeekStart}
         weeklyData={getCurrentWeeklyData()}
@@ -146,7 +143,6 @@ const App: React.FC = () => {
         onUpdateNote={(note) => updateWeeklyData({ generalNote: note })}
       />
 
-      {/* Expanded Overlay */}
       <AnimatePresence>
         {selectedDayLabel && (
           <ExpandedView 
@@ -167,10 +163,10 @@ const App: React.FC = () => {
           />
         )}
       </AnimatePresence>
-      
-      <footer className="mt-24 mb-12 opacity-30 flex items-center gap-2 handwritten text-lg">
-        <Pin size={16} className="text-amber-600" />
-        <span>Design is intelligence made visible.</span>
+
+      <footer className="mt-auto py-12 flex items-center justify-center gap-2 opacity-30 handwritten text-xl">
+        <Pin size={18} className="rotate-45" />
+        <span>Curating the soul of design.</span>
       </footer>
     </div>
   );
